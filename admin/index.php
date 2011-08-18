@@ -18,6 +18,7 @@ $display_mode = 'notes';
 
 if(isset($_GET['categories'])) {
     $display_mode = "categories";
+    echo $display_mode;
 }
 
 ?>
@@ -68,29 +69,45 @@ if($display_mode == 'categories') {
     	echo "</form>\n";
     }
 
-    /////////////////////////
-    echo "<h4>Create category</h4>\n";
-    /////////////////////////
-    ?>
-    
-    <div id="searchForm">
-    <form action="<?=$PHP_SELF?>?categories&action=create" method='post'>
-    <table>
-        <tr>
-            <td><input type='text' name='cat_name' /></td>
-            <td><input type='submit' class='submit' value='Search' /></td>
-        </tr>
-    </table>
-    </form>
-    
-    <?
+    if ($action == 'edit') {
+        /////////////////////////
+        echo "<h4>Edit Category</h4>\n";
+        /////////////////////////
+
+        $c = Category::CategoryWithId($req_cat_id);
+        echo "edit ".$c->name."*";
+        $action_link = $PHP_SELF."?categories&action=update&cat=".$req_cat_id;
+        $button_title = "Edit";
+    } else {
+        /////////////////////////
+        echo "<h4>Create category</h4>\n";
+        /////////////////////////
+        
+        $c = null;
+        $action_link = $PHP_SELF."?categories&action=create";
+        $button_title = "Create";
+    }
+
+
+
+    echo "<table id=\"categoryEdit\">\n";
+    echo "<form method=\"post\" action=\"".$action_link."\">\n";
+    echo "<tr>\n";
+    echo "<td><input type='text' name='cat_name' value=\"".htmlspecialchars($c->name)."\" /></td>\n";
+    echo "<td><input type='submit' class='submit' value='".htmlspecialchars($button_title)."' /></td>\n";
+    echo "</tr>\n";
+    echo "</form>\n";    
+    echo "</table>\n";	
+
 
     if ($action == 'create') {
-
         Category::Create($req_cat_name);
-        
     	header("Location: $PHP_SELF?categories");
-    	
+    	exit;
+    } else if ($action == 'update') {
+        $cat = Category::CategoryWithId($req_cat_id);
+        $cat->update($req_cat_name);
+    	header("Location: $PHP_SELF?categories");
     	exit;
     }
 

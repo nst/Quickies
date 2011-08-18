@@ -32,6 +32,19 @@ class Category extends DBObject {
     	return 1;
     }
     
+    public function update($req_name) {
+
+        $safe_req_name = mysql_real_escape_string(stripslashes($req_name));
+
+    	$query = "UPDATE ".Category::$table_name." SET name = '".$safe_req_name."' WHERE id = ".$this->id." LIMIT 1";
+
+        if($req_name == null) {
+            die($query);
+        }
+
+    	$result = mysql_query($query) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
+    }
+    
     public static function AllObjects($where_clause=null) {
         
         $query = "SELECT C.id, C.name FROM ".Category::$table_name." AS C";
@@ -91,7 +104,11 @@ class Note extends DBObject {
         $safe_note_text = mysql_real_escape_string(stripslashes($req_note_text));
 
     	$query = "UPDATE ".Note::$table_name." SET title = '".$safe_note_title."', text = '".$safe_note_text."', category_id = '".$safe_cat_id."' WHERE id = ".$this->id." LIMIT 1";
-        //die($query);
+
+        if($req_cat_id == 0 || $req_note_title == null || $req_note_text == null) {
+            die($query);
+        }
+
     	$result = mysql_query($query) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
     }
 
