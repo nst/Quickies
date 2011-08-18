@@ -49,7 +49,7 @@ $notes_count = Note::AllObjectsCount();
 
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    	<title><?=htmlentities($page_title)?></title>
+    	<title><?=htmlspecialchars($page_title)?></title>
     	<link href="style.css" rel="stylesheet" type="text/css" />
         <link rel="shortcut icon" href="/favicon.ico" />
     </head>
