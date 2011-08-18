@@ -11,9 +11,9 @@ Credits to [Borkware Quickies](http://borkware.com/quickies/) for inspiration an
 
   - PHP code and MySQL database, for maximal portability
   - two entities, `Category` and `Note`, one-to-many relationship
-  - create, search, update and delete for each entity
+  - create, update and delete for all entities, search in notes title and text
   - [Markdown syntax](http://daringfireball.net/projects/markdown/basics)
-  - made for code snippets but useable for virtally everything
+  - made for code snippets but useable for virtually everything
 
 Note that I am not a PHP developer and [any suggestion to improve the code would be welcome](http://seriot.ch/contact.php).
 
