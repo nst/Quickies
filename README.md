@@ -13,9 +13,9 @@ Credits to [Borkware Quickies](http://borkware.com/quickies/) for inspiration an
   - two entities, `Category` and `Note`, one-to-many relationship
   - create, update and delete for all entities, search in notes title and text
   - [Markdown syntax](http://daringfireball.net/projects/markdown/basics)
-  - made for code snippets but useable for virtually everything
+  - made for code snippets but useable for virtually anything
 
-Note that I am not a PHP developer and [any suggestion to improve the code would be welcome](http://seriot.ch/contact.php).
+Note that I am not a PHP developer and [any suggestion to improve the code is welcome](http://seriot.ch/contact.php).
 
 **Installation**
 
