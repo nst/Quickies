@@ -67,7 +67,7 @@ $notes_count = Note::AllObjectsCount();
         <form action='<?=$PHP_SELF?>' method='post'>
         <table>
             <tr>
-                <td><input type='text' name='search_string' value='<?=htmlentities($req_search_string)?>' /></td>
+                <td><input type='text' name='search_string' value='<?=$req_search_string?>' /></td>
                 <td><input type='submit' class='submit' value='Search' /></td>
             </tr>
         </table>
@@ -125,4 +125,3 @@ if($display_mode == 'titles') {
 
     </body>
 </html>
-
