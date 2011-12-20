@@ -1,4 +1,4 @@
-CODE {
+code {
 	font-family: monaco, "Courier New", courier, monospace;
 	font-size: 10px;
 }
@@ -10,7 +10,7 @@ CODE {
 }
 
 * html pre {
-	font-size: 101%; 
+	font-size: 101%;
 }
 
 body {
@@ -64,13 +64,16 @@ a:hover {
 	//margin: 20px 0;
 	padding: 8px;
 	text-align: left;
+	border-radius: 5px;
 	}
 
 .catTitleBig {
 	font-weight: bold;
 	font-size: 12px;
 	padding: 0.3em 3px 0.3em 3px;
-	background-color: #f0f0f0;}
+	background-color: #f0f0f0;
+	border-radius: 5px;
+	}
 
 .itemsList {
 	margin-bottom: 0.3em;
