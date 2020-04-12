@@ -10,7 +10,13 @@ $srv_user = "quickies_public";
 $srv_pass = "";
 $srv_db = "quickies";
 
-$connection = mysql_connect($srv_host, $srv_user, $srv_pass) or die("Invalid server or user". mysql_error());
-mysql_select_db($srv_db, $connection) or die ("SQL-error: ". mysql_error());
+$con = mysqli_connect($srv_host, $srv_user, $srv_pass, $srv_db) or die("Invalid server or user". mysql_error());
+
+if (mysqli_connect_errno($con))
+{
+    echo "Failed to connect to MySQL:" . mysqli_connect_error();
+}
+
+$GLOBALS["con"] = $con;
 
 ?>

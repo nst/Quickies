@@ -75,7 +75,7 @@ if($display_mode == 'categories') {
         /////////////////////////
 
         $c = Category::CategoryWithId($req_cat_id);
-        echo "edit ".$c->name."*";
+        
         $action_link = $PHP_SELF."?categories&action=update&cat=".$req_cat_id;
         $button_title = "Edit";
     } else {
@@ -87,9 +87,7 @@ if($display_mode == 'categories') {
         $action_link = $PHP_SELF."?categories&action=create";
         $button_title = "Create";
     }
-
-
-
+    
     echo "<table id=\"categoryEdit\">\n";
     echo "<form method=\"post\" action=\"".$action_link."\">\n";
     echo "<tr>\n";
@@ -98,7 +96,6 @@ if($display_mode == 'categories') {
     echo "</tr>\n";
     echo "</form>\n";    
     echo "</table>\n";	
-
 
     if ($action == 'create') {
         Category::Create($req_cat_name);
