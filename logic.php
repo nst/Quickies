@@ -15,22 +15,25 @@ class Category extends DBObject {
     public function delete() {
         $query = "DELETE FROM ".Category::$table_name." WHERE id = ".$this->id." LIMIT 1";
         $success = null;
-        $result = mysqli_query($success, $query) or die("mysql_error in delete: <b>".$query."</b> ". mysql_error());
+        $con = $GLOBALS["con"];
+        $result = mysqli_query($con, $query, $success) or die("mysql_error in delete: <b>".$query."</b> ". mysql_error());
         return 1;
     }
     
     public static function Create($name_param=null) {
+    
+        // TODO: handle duplicates
+                
         if($name_param == null) return;
         
-        $name_param_safe = mysql_real_escape_string(stripslashes($name_param));
+        $con = $GLOBALS["con"];
+        $name_param_safe = mysqli_real_escape_string($con, stripslashes($name_param));
         
         $query = "INSERT INTO ".Category::$table_name." (name) VALUES ('".$name_param_safe."')";
         
-        //echo $query;
-
-    	$result = mysqli_query($success, $query) or die("mysql_error in insert: ". mysql_error());
+    	$result = mysqli_query($con, $query, $success) or die("mysql_error in insert: ". mysql_error());
     	
-    	return 1;
+    	return mysqli_insert_id($con);
     }
     
     public function update($req_name) {
@@ -43,7 +46,9 @@ class Category extends DBObject {
             die($query);
         }
 
-    	$result = mysqli_query($success, $query) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
+        $con = $GLOBALS["con"];
+        $success = null;
+    	$result = mysqli_query($con, $query, $success) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
     }
     
     public static function AllObjects($where_clause=null) {
@@ -56,7 +61,8 @@ class Category extends DBObject {
         
         $query .= " ORDER BY C.name";        
         $con = $GLOBALS["con"];
-        $result = mysqli_query($con, $query) or die("Error in query: ". mysql_error());
+        $success = null;
+        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
         
         $a = array();
 
@@ -94,7 +100,9 @@ class Note extends DBObject {
 
     public function delete() {
         $query = "DELETE FROM ".Note::$table_name." WHERE id = ".$this->id." LIMIT 1";
-        $result = mysqli_query($success, $query) or die("mysql_error in delete: <b>".$query."</b> ". mysql_error());
+        $success = null;
+        $con = $GLOBALS["con"];
+        $result = mysqli_query($con, $query, $success) or die("mysql_error in delete: <b>".$query."</b> ". mysql_error());
         return 1;
     }
     
@@ -110,14 +118,16 @@ class Note extends DBObject {
         if($req_cat_id == 0 || $req_note_title == null || $req_note_text == null) {
             die($query);
         }
-
-    	$result = mysqli_query($con, $query) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
+        
+        $success = null;
+    	$result = mysqli_query($con, $query, $success) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
     }
 
     public static function AllObjectsCount() {
         $query = "SELECT COUNT(*) FROM ".Note::$table_name;
         $con = $GLOBALS["con"];
-        $result = mysqli_query($con, $query) or die("Error in query: ". mysql_error());
+        $success = null;
+        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
         while (list($count) = mysqli_fetch_row($result)) {
             return $count;
         }
@@ -134,7 +144,8 @@ class Note extends DBObject {
         
         $query = "INSERT INTO ".Note::$table_name." (category_id, title, text) VALUES ('".$safe_cat_id."', '".$safe_title."', '".$safe_text."')";
         
-    	$result = mysqli_query($con, $query) or die("mysql_error in insert: ". mysql_error());
+        $success = null;
+    	$result = mysqli_query($con, $query, $success) or die("mysql_error in insert: ". mysql_error());
     	
     	return 1;
     }
@@ -154,7 +165,8 @@ class Note extends DBObject {
         }
 
         $con = $GLOBALS["con"];
-        $result = mysqli_query($con, $query) or die("Error in query: ". mysql_error());
+        $success = null;
+        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
         
         $a = array();
     
@@ -191,7 +203,8 @@ class Note extends DBObject {
         $query = "SELECT N.id, N.title, N.text, N.timestamp, N.category_id FROM ".Note::$table_name." AS N WHERE category_id NOT IN (SELECT id FROM ".Category::$table_name.");";
         
         $con = $GLOBALS["con"];
-        $result = mysqli_query($con, $query) or die("Error in query: ". mysql_error());
+        $success = null;
+        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
         
         $a = array();
     
