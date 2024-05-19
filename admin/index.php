@@ -98,8 +98,8 @@ if($display_mode == 'categories') {
     echo "</table>\n";	
 
     if ($action == 'create') {
-        Category::Create($req_cat_name);
-    	header("Location: $PHP_SELF?categories");
+        $insert_id = Category::Create($req_cat_name);
+    	header("Location: $PHP_SELF?categories&action=edit&cat=".$insert_id);
     	exit;
     } else if ($action == 'update') {
         $cat = Category::CategoryWithId($req_cat_id);
@@ -193,9 +193,10 @@ if($display_mode == 'categories') {
 
     if ($action == 'create') {
     
-        Note::Create($req_cat_id, $req_note_title, $req_note_text);
-        
-    	header("Location: $PHP_SELF");
+        $insert_id = Note::Create($req_cat_id, $req_note_title, $req_note_text);
+                
+    	header("Location: $PHP_SELF/../?id=".$insert_id);    	
+    	
     	exit;
     	
     } else if ($action == 'update') {
@@ -204,7 +205,7 @@ if($display_mode == 'categories') {
 
         $note->update($req_cat_id, $req_note_title, $req_note_text);
 
-    	header("Location: $PHP_SELF");
+    	header("Location: $PHP_SELF/../?id=".$req_note_id);
     	exit;
 
     } else {
