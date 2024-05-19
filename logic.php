@@ -146,8 +146,8 @@ class Note extends DBObject {
         
         $success = null;
     	$result = mysqli_query($con, $query, $success) or die("mysql_error in insert: ". mysql_error());
-    	
-    	return 1;
+    	    	
+    	return mysqli_insert_id($con);
     }
     
     public static function AllObjects($where_clause=null, $order_clause=null, $limit=0) {
@@ -251,7 +251,9 @@ class Note extends DBObject {
         $query = "SELECT id, title, text, timestamp, category_id FROM `".Note::$table_name."` WHERE id = ".$id_int.";";
         //echo $query;
         
-        $result = mysql_query($query) or die("Error in query: ". mysql_error());
+        $con = $GLOBALS["con"];
+        $success = null;
+        $result = mysqli_query($con, $query) or die("Error in query: ". mysql_error());
         
         $a = array();
     
