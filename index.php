@@ -1,304 +1,128 @@
-<?ob_start();
+<?PHP
 
 header("Content-Type: text/html; charset=utf-8");
+
 include_once "config.inc";
-include_once "../logic.php";
+include_once "logic.php";
 
-$action = $_REQUEST['action'];
-$req_note_id = (int) $_REQUEST['id'];
-$req_cat_id = (int) $_REQUEST['cat'];
-$req_cat_name = $_REQUEST['cat_name'];
-$req_note_title = $_REQUEST['note_title'];
-$req_note_text = $_REQUEST['note_text'];
-$req_confirm_delete = $_REQUEST['confirm_delete'];
-$req_cancel_delete = $_REQUEST['cancel_delete'];
-$req_search_string = $_REQUEST['search_string'];
+$req_note_id = (int) $_GET['id'];
+$req_cat_id = (int) $_GET['cat'];
+$req_search_string = $_POST['search_string'];
 
-$display_mode = 'notes';
+$display_mode = 'categories';
 
-if(isset($_GET['categories'])) {
-    $display_mode = "categories";
-    echo $display_mode;
+if(isset($_GET['index'])) {
+    $display_mode = "titles";
+} else if (isset($_GET['all']) || isset($_GET['latest']) || $req_note_id != "" || $req_cat_id != "" || $req_search_string != "") {
+    $display_mode = "contents";
 }
+
+$page_title = $title_faq;
+
+if($display_mode == 'categories') {
+    $notes = Note::AllNotesIncludingOnesWithoutCategory();
+} else if($req_note_id != 0) {
+    $notes = Note::NotesWithId($req_note_id);
+    if(count($notes) > 0) {
+        $n = $notes[0];
+        $page_title .= " > ".$n->category_name." > ".$n->title;
+    }
+} else if($req_cat_id != 0) {
+    $c = Category::CategoryWithId($req_cat_id);
+    $page_title .= " > ".$c->name;
+    $notes = Note::NotesWithCatId($c->id);
+} else if($req_search_string != '') {
+    $notes = Note::NotesWithSearchString($req_search_string);
+} else if (isset($_GET['latest'])) {
+    $notes = Note::LatestNotes();
+} else {
+    $notes = Note::AllNotesIncludingOnesWithoutCategory();
+}
+
+$notes_count = Note::AllObjectsCount();
 
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<title><?=$title_faq?></title>
-	<link href="../style.css" rel="stylesheet" type="text/css" />
-</head>
-<body>
 
-    <div id="pageTitle"><?=$title_faq?></div>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    	<title><?=htmlspecialchars($page_title)?></title>
+    	<link href="style.css" rel="stylesheet" type="text/css" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+    </head>
 
-    <p>[<a href="<?=$PHP_SELF?>">notes</a>] [<a href="<?=$PHP_SELF?>?categories">categories</a>]</p>
+    <body>
+ 
+        <div id="pageTitle"><?=$title_faq?></div>
 
+        <p>[<a href="<?=$PHP_SELF?>">categories</a>] 
+           [<a href="<?=$PHP_SELF?>?index">index</a>] 
+           [<a href="<?=$PHP_SELF?>?all">all (<?=$notes_count?>)</a>] 
+           [<a href="<?=$PHP_SELF?>?latest">latest</a>]</p>
+
+        <div id="searchForm">
+        <form action='<?=$PHP_SELF?>' method='post'>
+        <table>
+            <tr>
+                <td><input type='text' name='search_string' value='<?=$req_search_string?>' /></td>
+                <td><input type='submit' class='submit' value='Search' /></td>
+            </tr>
+        </table>
+        </form>
+
+        </div>
 <?
 
-if($display_mode == 'categories') {
+$current_cat_id = "";
 
-    if ($action == 'delete') {
-        /////////////////////////
-        echo "<h4>Delete Category</h4>\n";
-        /////////////////////////
+foreach($notes as $n) {
+
+    if($n->category_id != $current_cat_id) {
         
-        $c = Category::CategoryWithId($req_cat_id);
-
-    	if ($req_confirm_delete) {
-
-            $c->delete();
-            
-            // TODO: add status
-            
-    		header("Location: $PHP_SELF?categories");
-    		exit;
-    	}
-
-    	if ($req_cancel_delete) {
-    	    header("Location: $PHP_SELF?categories");
-    		exit;
-    	}
-        
-        echo "<form method=\"post\" action=\"$PHP_SELF?categories&action=delete&cat=$c->id\">\n";
-    		echo "Do you really want to delete category $c->id - ".stripslashes($c->name)."?<br>\n";
-    		echo "<input type=\"submit\" name=\"cancel_delete\" value=\"Cancel\">\n";
-    		echo "<input type=\"submit\" name=\"confirm_delete\" value=\"Delete\">\n";
-    	echo "</form>\n";
-    }
-
-    if ($action == 'edit') {
-        /////////////////////////
-        echo "<h4>Edit Category</h4>\n";
-        /////////////////////////
-
-        $c = Category::CategoryWithId($req_cat_id);
-        
-        $action_link = $PHP_SELF."?categories&action=update&cat=".$req_cat_id;
-        $button_title = "Edit";
-    } else {
-        /////////////////////////
-        echo "<h4>Create category</h4>\n";
-        /////////////////////////
-        
-        $c = null;
-        $action_link = $PHP_SELF."?categories&action=create";
-        $button_title = "Create";
-    }
-    
-    echo "<table id=\"categoryEdit\">\n";
-    echo "<form method=\"post\" action=\"".$action_link."\">\n";
-    echo "<tr>\n";
-    echo "<td><input type='text' name='cat_name' value=\"".htmlspecialchars($c->name)."\" /></td>\n";
-    echo "<td><input type='submit' class='submit' value='".htmlspecialchars($button_title)."' /></td>\n";
-    echo "</tr>\n";
-    echo "</form>\n";    
-    echo "</table>\n";	
-
-    if ($action == 'create') {
-        $insert_id = Category::Create($req_cat_name);
-    	header("Location: $PHP_SELF?categories&action=edit&cat=".$insert_id);
-    	exit;
-    } else if ($action == 'update') {
-        $cat = Category::CategoryWithId($req_cat_id);
-        $cat->update($req_cat_name);
-    	header("Location: $PHP_SELF?categories");
-    	exit;
-    }
-
-    /////////////////////////
-    echo "<h4>Categories</h4>\n";
-    /////////////////////////
-
-    $categories = Category::allObjects();
-
-    echo "<table>\n";
-
-    echo "<p>".count($categories)." categories</p>\n";
-
-	echo "<tr>\n";
-		echo "<th>id</td>\n";
-		echo "<th>name</td>\n";
-		echo "</td>\n";
-	echo "</tr>\n";
-
-    foreach($categories as $c) {
-    	echo "<tr>\n";
-    	    echo "<td>".$c->id."</td>\n";
-    		echo "<td><a href='?categories&action=edit&cat=".$c->id."'>edit</a></td>";
-    		echo "<td><a href='?categories&action=delete&cat=".$c->id."'>delete</a></td>";
-
-            echo "<td>".$c->name."</td>\n";
-            echo "<td><a href='../index.php?cat=".$c->id."'>".$c->name."</a></td>";
-    	echo "</tr>\n";
-	}
-
-    echo "</table>\n";
-
-} else if ($display_mode == "notes") {
-
-    if ($action == 'delete') {
-
-    	if ($req_confirm_delete) {
-
-            /////////////////////////
-            echo "<h4>Delete Notes</h4>\n";
-            /////////////////////////
-            
-            $n = Note::NoteWithIdNoCategory($req_note_id);
-            
-            $status = $n->delete();
-            
-            if($status == 0) {
-                echo "error, cannot delete note";
-                exit;
+        if($display_mode == 'categories') {
+            echo "<div class=\"catTitleSmall\"><a href=\"$PHP_SELF?cat=$n->category_id\">".$n->category_name." (".count(Note::NotesWithCatId($n->category_id)).")</a></div>\n";                                                                        
+        } else {
+            if($current_cat_id != "") {
+                echo "</ol>\n";
             }
-            
-    		header("Location: $PHP_SELF?notes");
-    		exit;
-    	}
-
-    	if ($req_cancel_delete) {
-    	    header("Location: $PHP_SELF?notes");
-    		exit;
-    	}
-        
-        $n = Note::NoteWithIdNoCategory($req_note_id);
-
-        echo "<form method=\"post\" action=\"$PHP_SELF?notes&action=delete&id=$n->id\">\n";
-    		echo "Do you really want to delete note $req_note_id - ".stripslashes($n->title)."?<br>\n";
-    		echo "<input type=\"submit\" name=\"cancel_delete\" value=\"Cancel\">\n";
-    		echo "<input type=\"submit\" name=\"confirm_delete\" value=\"Delete\">\n";
-    	echo "</form>\n";
-    }
-
-    /////////////////////////
-    echo "<h4>Search Notes</h4>\n";
-    /////////////////////////
-    ?>
-    <div id="searchForm">
-    <form action='<?=$PHP_SELF?>' method='post'>
-    <table>
-        <tr>
-            <td><input type='text' name='search_string' value='<?=htmlentities($req_search_string)?>' /></td>
-            <td><input type='submit' class='submit' value='Search' /></td>
-        </tr>
-    </table>
-    </form>
-    <?
-
-    $categories = Category::allObjects();
-
-    if ($action == 'create') {
-    
-        Note::Create($req_cat_id, $req_note_title, $req_note_text);
-        
-    	header("Location: $PHP_SELF");
-    	exit;
-    	
-    } else if ($action == 'update') {
-
-        $note = Note::NoteWithId($req_note_id);
-
-        $note->update($req_cat_id, $req_note_title, $req_note_text);
-
-    	header("Location: $PHP_SELF");
-    	exit;
-
-    } else {
-
-        if ($action == 'edit') {
-            /////////////////////////
-            echo "<h4>Edit Note</h4>\n";
-            /////////////////////////
-
-            $n = Note::NoteWithId($req_note_id);
-            
-            $action_link = $PHP_SELF."?action=update&id=".$req_note_id;
-        } else {
-            /////////////////////////
-            echo "<h4>Create Note</h4>\n";
-            /////////////////////////
-
-            $n = null;
-            $action_link = $PHP_SELF."?action=create";
+            echo "<div class=\"catTitleBig\"><a href=\"$PHP_SELF?cat=$n->category_id\">".$n->category_name."</a></div>\n";                                                
+            echo "<ol>\n";
         }
         
-        echo "<table id=\"noteEdit\">\n";
-        echo "<form method=\"post\" action=\"".$action_link."\">\n";
+        $current_cat_id = $n->category_id;
+    }
         
-        echo "<tr><th>category</th>";
-        
-        echo "<td><select name=\"cat\">\n";
-        	$categories = Category::allObjects();
-
-        	foreach ($categories as $c) {
-        	    if($c->id == $n->category_id) {
-        		    echo "<option selected=\"selected\" name = \"cat\" value=\"$c->id\">".$c->name."</option>\n";
-        	    } else {
-        		    echo "<option  name = \"cat\" value=\"$c->id\">".$c->name."</option>\n";
-        		}
-        	}
-        echo "</select></td></tr>\n";
-
-        echo "<tr><th>title</th>";
-
-        echo "<td><input type=\"text\" size=\"93\" name=\"note_title\" value=\"".htmlspecialchars($n->title)."\" /></td>\n";
-        echo "<tr><th>text</th><td><textarea rows=20 cols=80 wrap=\"off\" name=\"note_text\">".$n->text."</textarea></td>\n";
-        echo "<tr><th></th><td><input type=\"submit\" class=\"submit\" name=\"submit\" value=\"Submit\"></td>\n";
-        echo "</form>\n";
-        
-        echo "</table>\n";	
+    if($display_mode == 'contents') {
+        echo "<li class=\"itemsList\">\n";
+        echo "<div class=\"noteTitleBig\"><a href=\"".$PHP_SELF."?id=".$n->id."\">".$n->title."</a></div>\n";
+        echo "<div class=\"noteText\">".Markdown($n->text)."</div>\n";
+        echo "</li>\n";
+    } else if ($display_mode == 'titles') {
+        echo "<li class=\"itemsList\">\n";
+        echo "<div class=\"noteTitleSmall\"><a href=\"$PHP_SELF?id=$n->id\">".$n->title."</a></div>\n";
+        echo "</li>\n";
+    } else if ($display_mode == 'categories') {
+        // nothing
     }
 
-    /////////////////////////
-    echo "<h4>Notes</h4>\n";
-    /////////////////////////
 
-        $notes = array();
+}
 
-        if($req_search_string != "") {
-            $notes = Note::NotesWithSearchString($req_search_string);            
-        } else {
-            $notes = Note::AllNotesIncludingOnesWithoutCategory();
-        }
-        
-        echo "<table>\n";
+if($display_mode == 'contents') {
+    echo "</ol>";
+}
 
-        echo "<p>".count($notes)." notes</p>\n";
-
-    	echo "<tr>\n";
-    		echo "<th>id</td>\n";
-    		echo "<th>edit</td>\n";
-    		echo "<th>delete</td>\n";
-    		echo "<th>category</td>\n";
-    		echo "<th>title</td>\n";
-    		echo "</td>\n";
-    	echo "</tr>\n";
-
-        foreach($notes as $n) {
-
-        	echo "<tr>\n";
-        	    echo "<td>".$n->id."</td>\n";
-        		echo "<td><a href='?action=edit&id=".$n->id."'>edit</a></td>";
-        		echo "<td><a href='?action=delete&id=".$n->id."'>delete</a></td>";
-
-                echo "<td>".$n->category_name."</td>\n";
-                echo "<td><a href='../index.php?id=".$n->id."'>".$n->title."</a></td>";
-        	echo "</tr>\n";
-
-    	}
-
-    echo "</table>\n";
+if($display_mode == 'titles') {
+    echo "</ol>";
 }
 
 ?>
 
-<div id="footer"><?=$footer_text?></div>
+     <div id="footer"><?=$footer_text?></div>
 
-</body>
+    </body>
 </html>
 
-<?ob_end_flush();?>
