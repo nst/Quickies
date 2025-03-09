@@ -16,7 +16,7 @@ class Category extends DBObject {
         $query = "DELETE FROM ".Category::$table_name." WHERE id = ".$this->id." LIMIT 1";
         $success = null;
         $con = $GLOBALS["con"];
-        $result = mysqli_query($con, $query, $success) or die("mysql_error in delete: <b>".$query."</b> ". mysql_error());
+        $result = mysqli_query($con, $query) or die("mysqli error in delete: <b>".$query."</b> ". mysqli_error($con));
         return 1;
     }
     
@@ -27,28 +27,27 @@ class Category extends DBObject {
         if($name_param == null) return;
         
         $con = $GLOBALS["con"];
-        $name_param_safe = mysqli_real_escape_string($con, stripslashes($name_param));
+        $name_param_safe = mysqli_real_escape_string($con, $name_param);
         
         $query = "INSERT INTO ".Category::$table_name." (name) VALUES ('".$name_param_safe."')";
         
-    	$result = mysqli_query($con, $query, $success) or die("mysql_error in insert: ". mysql_error());
-    	
-    	return mysqli_insert_id($con);
+        $result = mysqli_query($con, $query) or die("mysqli error in insert: ". mysqli_error($con));
+        
+        return mysqli_insert_id($con);
     }
     
     public function update($req_name) {
+        $con = $GLOBALS["con"];
+        $safe_req_name = mysqli_real_escape_string($con, $req_name);
 
-        $safe_req_name = mysql_real_escape_string(stripslashes($req_name));
-
-    	$query = "UPDATE ".Category::$table_name." SET name = '".$safe_req_name."' WHERE id = ".$this->id." LIMIT 1";
+        $query = "UPDATE ".Category::$table_name." SET name = '".$safe_req_name."' WHERE id = ".$this->id." LIMIT 1";
 
         if($req_name == null) {
             die($query);
         }
 
-        $con = $GLOBALS["con"];
         $success = null;
-    	$result = mysqli_query($con, $query, $success) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
+        $result = mysqli_query($con, $query) or die("mysqli error in update: <b>".$query."</b> ". mysqli_error($con));
     }
     
     public static function AllObjects($where_clause=null) {
@@ -62,7 +61,7 @@ class Category extends DBObject {
         $query .= " ORDER BY C.name";        
         $con = $GLOBALS["con"];
         $success = null;
-        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
+        $result = mysqli_query($con, $query) or die("Error in query: ". mysqli_error($con));
         
         $a = array();
 
@@ -102,7 +101,7 @@ class Note extends DBObject {
         $query = "DELETE FROM ".Note::$table_name." WHERE id = ".$this->id." LIMIT 1";
         $success = null;
         $con = $GLOBALS["con"];
-        $result = mysqli_query($con, $query, $success) or die("mysql_error in delete: <b>".$query."</b> ". mysql_error());
+        $result = mysqli_query($con, $query) or die("mysqli error in delete: <b>".$query."</b> ". mysqli_error($con));
         return 1;
     }
     
@@ -110,24 +109,24 @@ class Note extends DBObject {
 
         $con = $GLOBALS["con"];
         $safe_cat_id = mysqli_real_escape_string($con, (int)$req_cat_id);
-        $safe_note_title = mysqli_real_escape_string($con, stripslashes($req_note_title));
-        $safe_note_text = mysqli_real_escape_string($con, stripslashes($req_note_text));
+        $safe_note_title = mysqli_real_escape_string($con, $req_note_title);
+        $safe_note_text = mysqli_real_escape_string($con, $req_note_text);
 
-    	$query = "UPDATE ".Note::$table_name." SET title = '".$safe_note_title."', text = '".$safe_note_text."', category_id = '".$safe_cat_id."' WHERE id = ".$this->id." LIMIT 1";
+        $query = "UPDATE ".Note::$table_name." SET title = '".$safe_note_title."', text = '".$safe_note_text."', category_id = '".$safe_cat_id."' WHERE id = ".$this->id." LIMIT 1";
 
         if($req_cat_id == 0 || $req_note_title == null || $req_note_text == null) {
             die($query);
         }
         
         $success = null;
-    	$result = mysqli_query($con, $query, $success) or die("mysql_error in update: <b>".$query."</b> ". mysql_error());
+        $result = mysqli_query($con, $query) or die("mysqli error in update: <b>".$query."</b> ". mysqli_error($con));
     }
 
     public static function AllObjectsCount() {
         $query = "SELECT COUNT(*) FROM ".Note::$table_name;
         $con = $GLOBALS["con"];
         $success = null;
-        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
+        $result = mysqli_query($con, $query) or die("Error in query: ". mysqli_error($con));
         while (list($count) = mysqli_fetch_row($result)) {
             return $count;
         }
@@ -139,15 +138,15 @@ class Note extends DBObject {
         
         $con = $GLOBALS["con"];
         $safe_cat_id = mysqli_real_escape_string($con, (int)$req_cat_id);
-        $safe_title = mysqli_real_escape_string($con, stripslashes($req_title));
-        $safe_text = mysqli_real_escape_string($con, stripslashes($req_text));
+        $safe_title = mysqli_real_escape_string($con, $req_title);
+        $safe_text = mysqli_real_escape_string($con, $req_text);
         
         $query = "INSERT INTO ".Note::$table_name." (category_id, title, text) VALUES ('".$safe_cat_id."', '".$safe_title."', '".$safe_text."')";
         
         $success = null;
-    	$result = mysqli_query($con, $query, $success) or die("mysql_error in insert: ". mysql_error());
-    	    	
-    	return mysqli_insert_id($con);
+        $result = mysqli_query($con, $query) or die("mysqli error in insert: ". mysqli_error($con));
+                
+        return mysqli_insert_id($con);
     }
     
     public static function AllObjects($where_clause=null, $order_clause=null, $limit=0) {
@@ -166,7 +165,7 @@ class Note extends DBObject {
 
         $con = $GLOBALS["con"];
         $success = null;
-        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
+        $result = mysqli_query($con, $query) or die("Error in query: ". mysqli_error($con));
         
         $a = array();
     
@@ -204,11 +203,11 @@ class Note extends DBObject {
         
         $con = $GLOBALS["con"];
         $success = null;
-        $result = mysqli_query($con, $query, $success) or die("Error in query: ". mysql_error());
+        $result = mysqli_query($con, $query) or die("Error in query: ". mysqli_error($con));
         
         $a = array();
     
-        while (list($note_id, $note_title, $note_text, $note_timestamp, $note_category_id, $category_id) = mysqli_fetch_row($result)) {
+        while (list($note_id, $note_title, $note_text, $note_timestamp, $note_category_id) = mysqli_fetch_row($result)) {
             $n = new Note();
             $n->id = $note_id;
             $n->title = $note_title;
@@ -238,9 +237,10 @@ class Note extends DBObject {
     public static function NoteWithId($id) {
         $notes = Note::NotesWithId($id);
         
-        $n = $notes[0];
-        
-        if($n) return $n;
+        if (count($notes) > 0) {
+            $n = $notes[0];
+            return $n;
+        }
         
         return Note::NoteWithIdNoCategory($id);
     }
@@ -249,11 +249,10 @@ class Note extends DBObject {
         $id_int = (int)$id;        
         
         $query = "SELECT id, title, text, timestamp, category_id FROM `".Note::$table_name."` WHERE id = ".$id_int.";";
-        //echo $query;
         
         $con = $GLOBALS["con"];
         $success = null;
-        $result = mysqli_query($con, $query) or die("Error in query: ". mysql_error());
+        $result = mysqli_query($con, $query) or die("Error in query: ". mysqli_error($con));
         
         $a = array();
     
@@ -281,7 +280,6 @@ class Note extends DBObject {
     public function NotesWithSearchString($s) {
         $con = $GLOBALS["con"];
         $ss = mysqli_real_escape_string($con, $s);
-        //echo $s;
         $where_clause = "N.title LIKE '%$ss%' OR N.text LIKE '%$ss%'";
         return Note::AllObjects($where_clause);
     }
